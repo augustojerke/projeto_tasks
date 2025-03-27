@@ -19,28 +19,7 @@ export default function Login() {
               callbackUrl: "/tarefas",
             });
           }}
-        >
-          <input
-            name="email"
-            type="email"
-            placeholder="E-mail"
-            required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-500"
-          />
-          <input
-            name="password"
-            type="password"
-            placeholder="Senha"
-            required
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-gray-500"
-          />
-          <button
-            type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 rounded-lg transition"
-          >
-            Entrar
-          </button>
-        </form>
+        ></form>
         <div className="flex items-center justify-center">
           <button
             onClick={() => signIn("google", { callbackUrl: "/tarefas" })}

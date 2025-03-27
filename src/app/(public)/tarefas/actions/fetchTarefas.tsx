@@ -8,9 +8,29 @@ async function getTarefas() {
   return res.json();
 }
 
+async function createTarefa(data: any) {
+  const res = await fetch("/api/tarefas", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    throw new Error("Erro ao criar tarefa");
+  }
+  return res.json();
+}
+
 async function updateTarefa(data: any) {
-  const res = await fetch("/api/tarefa");
-  if (!res.ok || !data.sucesso) {
+  const res = await fetch("/api/tarefas", {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
     throw new Error("Erro na busca de tarefas");
   }
   return res.json();
@@ -34,20 +54,6 @@ export function useCreateTarefa() {
   return useMutation({
     mutationFn: (data) => createTarefa(data),
   });
-}
-
-async function createTarefa(data: any) {
-  const res = await fetch("/api/tarefas", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-  if (!res.ok) {
-    throw new Error("Erro ao criar tarefa");
-  }
-  return res.json();
 }
 
 export function useDeleteTarefa() {

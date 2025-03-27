@@ -16,101 +16,134 @@ export default function Tarefas() {
     useCreateTarefa();
   const { mutateAsync: deletaNoticia, isPending: isLoadingDelete } =
     useDeleteTarefa();
-
-  const { mutateAsync: updateNoticia, isPending: isLoadingUpdate } =
+  const { mutateAsync: updateTarefa, isPending: isLoadingUpdate } =
     useUpdateTarefas();
 
-  function onSubmit(data: any) {
-    console.log(data);
+  function onSubmit(data) {
     create(data, {
-      onSuccess: () => {
-        console.log("Sucesso");
-        queryClient.invalidateQueries({ queryKey: ["tarefas"] });
-      },
-      onError: () => {
-        console.log("Erro");
-      },
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tarefas"] }),
     });
   }
 
+  function onUpdate(id, novoConteudo) {
+    updateTarefa(
+      { id, conteudo: novoConteudo },
+      {
+        onSuccess: () =>
+          queryClient.invalidateQueries({ queryKey: ["tarefas"] }),
+      }
+    );
+  }
+
+  function onToggleConcluida(id, concluida) {
+    updateTarefa(
+      { id, concluida: !concluida }, // Alterna entre true/false
+      {
+        onSuccess: () =>
+          queryClient.invalidateQueries({ queryKey: ["tarefas"] }),
+      }
+    );
+  }
+
   return (
-    <>
-      {isLoadingCriacao && <span>Criando tarefa ...</span>}
-      <div className="flex justify-center">
+    <div className="container mx-auto p-6">
+      {isLoadingCriacao && (
+        <span className="text-blue-500">Criando tarefa ...</span>
+      )}
+
+      <div className="flex justify-center mb-6">
         <form
+          className="flex gap-2"
           onSubmit={(e) => {
             e.preventDefault();
             const formData = new FormData(e.currentTarget);
-            onSubmit({
-              conteudo: formData.get("conteudo"),
-            });
+            onSubmit({ conteudo: formData.get("conteudo") });
           }}
         >
-          <input name="conteudo" placeholder="conteudo" />
-          <button type="submit">Criar</button>
+          <input
+            name="conteudo"
+            placeholder="Nova tarefa"
+            className="border rounded px-4 py-2"
+          />
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded"
+          >
+            Criar
+          </button>
         </form>
-        {isLoadingDelete && <span>Deletando Tarefa ...</span>}
       </div>
+
+      {isLoadingDelete && (
+        <span className="text-red-500">Deletando Tarefa ...</span>
+      )}
+
       {!isFetching ? (
-        <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 border-t border-gray-200 pt-10 sm:mt-16 sm:pt-16 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-          {data?.map((t: any) => (
-            <article
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {data?.map((t) => (
+            <div
               key={t.id}
-              className="flex max-w-xl flex-col items-start justify-between"
+              className={`shadow-lg rounded-lg p-4 border ${
+                t.concluida
+                  ? "bg-green-100 border-green-500"
+                  : "bg-white border-gray-200"
+              }`}
             >
-              <div className="flex items-center gap-x-4 text-xs">
-                <time className="text-gray-500">2025-03-15</time>
-                <span className="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100">
-                  Tecnologia
-                </span>
-              </div>
-              <div className="group relative">
-                <h3 className="mt-3 text-lg/6 font-semibold text-gray-900 group-hover:text-gray-600">
-                  <Link href={`/tarefas/${t.id}`}>
-                    <span className="absolute inset-0" />
-                    {t.conteudo}
-                  </Link>
-                </h3>
-                <p className="mt-5 line-clamp-3 text-sm/6 text-gray-600">
+              <div className="flex justify-between items-center">
+                <h3
+                  className={`text-lg font-semibold ${
+                    t.concluida
+                      ? "text-green-700 line-through"
+                      : "text-gray-900"
+                  }`}
+                >
                   {t.conteudo}
-                </p>
+                </h3>
+
+                <button
+                  className="text-red-500"
+                  onClick={() =>
+                    deletaNoticia(
+                      { id: t.id },
+                      {
+                        onSuccess: () =>
+                          queryClient.invalidateQueries({
+                            queryKey: ["tarefas"],
+                          }),
+                      }
+                    )
+                  }
+                >
+                  ❌
+                </button>
               </div>
 
-              <button
-                className="text-red-500"
-                onClick={() => {
-                  deletaNoticia(
-                    {
-                      id: t.id,
-                    },
-                    {
-                      onSuccess: () => {
-                        queryClient.invalidateQueries({
-                          queryKey: ["tarefas"],
-                        });
-                      },
-                    }
-                  );
-                }}
-              >
-                Deletar
-              </button>
-              <div className="relative mt-8 flex items-center gap-x-4">
-                <div className="text-sm/6">
-                  <p className="font-semibold text-gray-900">
-                    <span>
-                      <span className="absolute inset-0" />
-                      {t.usuario.nome}
-                    </span>
-                  </p>
-                </div>
+              <input
+                type="text"
+                defaultValue={t.conteudo}
+                className="mt-2 w-full border px-2 py-1 rounded"
+                onBlur={(e) => onUpdate(t.id, e.target.value)}
+              />
+
+              <div className="flex items-center mt-3">
+                <input
+                  type="checkbox"
+                  checked={t.concluida}
+                  onChange={() => onToggleConcluida(t.id, t.concluida)}
+                  className="h-5 w-5 text-green-500 border-gray-300 rounded focus:ring-green-400"
+                />
+                <label className="ml-2 text-sm text-gray-700">Concluída</label>
               </div>
-            </article>
+
+              <p className="text-sm text-gray-500 mt-2">
+                Por: {t.usuario.nome}
+              </p>
+            </div>
           ))}
         </div>
       ) : (
-        <>Carregando tarefas ....</>
+        <p className="text-center text-gray-500">Carregando tarefas ....</p>
       )}
-    </>
+    </div>
   );
 }
